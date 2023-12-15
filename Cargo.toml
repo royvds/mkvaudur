@@ -1,0 +1,18 @@
+[package]
+name = "mkvaudur"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.4.8", features = ["derive"] }
+serde_json = { version = "1.0.108", default-features = false, features = [
+    "alloc",
+] }
+tempfile = "3.8.1"
+
+[profile.release]
+opt-level = 'z'   # Optimize for size
+lto = true        # Enable link-time optimization
+codegen-units = 1 # Reduce number of codegen units to increase optimizations
+panic = 'abort'   # Abort on panic
+strip = true      # Strip symbols from binary*
