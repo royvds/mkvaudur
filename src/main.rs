@@ -1,15 +1,17 @@
 use clap::Parser;
 
-use mkvaudur::args::AudiotrimmerArgs;
+use mkvaudur::args::MkvAudurArgs;
 use mkvaudur::mediainfo::get_mediainfo;
-use mkvaudur::{get_files, process_mkv_file};
+use mkvaudur::{get_files, process_mkv_file, TrackFilter};
 
 fn main() {
-    let args = AudiotrimmerArgs::parse();
+    let args = MkvAudurArgs::parse();
     let mkv_files = get_files(&args.filepath);
-    let reference_files = match &args.reference {
-        Some(path) => Some(get_files(path)),
-        None => None,
+    let reference_files = args.reference.as_ref().map(get_files);
+    let track_filter = TrackFilter {
+        treshold: args.treshold,
+        language: args.language,
+        process_all: args.all,
     };
 
     if reference_files.is_some() {
@@ -21,9 +23,7 @@ fn main() {
                 &mkv_mediainfo,
                 &ref_mediainfo,
                 &args.mode,
-                args.treshold,
-                &args.language,
-                args.all,
+                &track_filter,
                 &args.output,
             );
         }
@@ -35,9 +35,7 @@ fn main() {
                 &mkv_mediainfo,
                 &mkv_mediainfo,
                 &args.mode,
-                args.treshold,
-                &args.language,
-                args.all,
+                &track_filter,
                 &args.output,
             );
         }

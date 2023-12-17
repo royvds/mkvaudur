@@ -16,12 +16,12 @@ pub fn get_mediainfo(input_file: &PathBuf) -> Value {
     {
         Ok(output) => {
             let data = str::from_utf8(&output.stdout).unwrap();
-            return serde_json::from_str(data).unwrap();
+            serde_json::from_str(data).unwrap()
         }
         Err(_) => {
             panic!("Could not retrieve mediainfo of file, is mediainfo installed to path?");
         }
-    };
+    }
 }
 
 pub fn get_audio_ext(track: &Value) -> String {

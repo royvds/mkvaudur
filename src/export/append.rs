@@ -161,7 +161,8 @@ pub fn append_silence(
         }
         _ => {
             // Could use the concat method here too, but this is
-            // faster, and more accurate for lossy encoded tracks
+            // faster, more accurate for lossy encoded tracks, and
+            // requires less IO usage
             Command::new("ffmpeg")
                 .arg("-y")
                 .arg("-i")

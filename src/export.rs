@@ -4,6 +4,8 @@ use std::process::Command;
 
 use serde_json::Value;
 
+use crate::TrackFilter;
+
 use self::output::{create_track_filepath, get_codec_args, get_map_args};
 use super::export::{append::append_silence, trim::trim_silence};
 
@@ -28,9 +30,7 @@ pub fn export(
     mkv_file: &PathBuf,
     mkv_mediainfo: &Value,
     video_duration: f64,
-    treshold: f64,
-    language: &Option<String>,
-    process_all: bool,
+    track_filter: &TrackFilter,
     output_dir: &Option<OsString>,
 ) {
     println!(
@@ -50,15 +50,16 @@ pub fn export(
             track["Duration"].as_str().unwrap().parse::<f64>().unwrap() - video_duration;
         let track_language = track["Language"].as_str();
 
-        if (language.is_none()
-            || (track_language.is_some() && track_language.unwrap() == language.as_ref().unwrap()))
-            && f64::abs(duration_difference) > treshold
+        if (track_filter.language.is_none()
+            || (track_language.is_some()
+                && track_language.unwrap() == track_filter.language.as_ref().unwrap()))
+            && f64::abs(duration_difference) > track_filter.treshold
         {
             match duration_difference > 0.0 {
                 true => trim_silence(mkv_file, track, video_duration, output_dir),
                 false => append_silence(mkv_file, track, f64::abs(duration_difference), output_dir),
             }
-        } else if process_all {
+        } else if track_filter.process_all {
             export_unchanged(mkv_file, track, output_dir);
         }
     }

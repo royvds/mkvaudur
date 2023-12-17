@@ -4,7 +4,7 @@ use std::{
     path::PathBuf,
 };
 
-use mkvaudur::{args::OperationMode, mediainfo::get_mediainfo, process_mkv_file};
+use mkvaudur::{args::OperationMode, mediainfo::get_mediainfo, process_mkv_file, TrackFilter};
 
 fn get_audio_files(dir: &str) -> Vec<PathBuf> {
     let paths = read_dir(dir).unwrap();
@@ -30,6 +30,12 @@ fn get_audio_file_duration(audio_file: &PathBuf) -> f64 {
         .unwrap()
 }
 
+static TRACK_FILTER: TrackFilter = TrackFilter {
+    treshold: 0.0,
+    language: None,
+    process_all: false,
+};
+
 #[test]
 fn trim() {
     let mkv_file = PathBuf::from("./tests/test_video_2s.mkv");
@@ -39,9 +45,7 @@ fn trim() {
         &mkv_mediainfo,
         &mkv_mediainfo,
         &OperationMode::Export,
-        0.0,
-        &None,
-        false,
+        &TRACK_FILTER,
         &Some(OsString::from("./tests/trim")),
     );
 
@@ -64,9 +68,7 @@ fn append() {
         &mkv_mediainfo,
         &ref_mediainfo,
         &OperationMode::Export,
-        0.0,
-        &None,
-        false,
+        &TRACK_FILTER,
         &Some(OsString::from("./tests/append")),
     );
 
