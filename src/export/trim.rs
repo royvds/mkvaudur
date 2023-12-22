@@ -21,8 +21,5 @@ pub fn trim_silence(
         .args(get_codec_args(track))
         .arg(create_track_filepath(input_file, track, output_dir))
         .output()
-        .expect(&format!(
-            "Failed trimming audio of file: {}",
-            input_file.display()
-        ));
+        .unwrap_or_else(|_| panic!("Failed trimming audio of file: {}", input_file.display()));
 }

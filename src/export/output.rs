@@ -1,4 +1,8 @@
-use std::{ffi::OsString, fs::create_dir_all, path::PathBuf};
+use std::{
+    ffi::OsString,
+    fs::create_dir_all,
+    path::{Path, PathBuf},
+};
 
 use serde_json::Value;
 
@@ -6,7 +10,7 @@ use crate::mediainfo::get_audio_ext;
 
 /// Includes directory, filename, and extension
 pub fn create_track_filepath(
-    input_file: &PathBuf,
+    input_file: &Path,
     track: &Value,
     custom_directory: &Option<OsString>,
 ) -> OsString {
@@ -31,14 +35,14 @@ pub fn create_track_filepath(
 }
 
 /// Includes filename and extension. Excludes directory.
-pub fn create_track_filename(input_file: &PathBuf, track: &Value) -> OsString {
+pub fn create_track_filename(input_file: &Path, track: &Value) -> OsString {
     let mut output_filename = create_track_filestem(input_file, track);
     output_filename.push(get_audio_ext(track));
     output_filename
 }
 
 /// Includes filename. Excludes directory and extension
-pub fn create_track_filestem(input_file: &PathBuf, track: &Value) -> OsString {
+pub fn create_track_filestem(input_file: &Path, track: &Value) -> OsString {
     let mut output_filename = input_file.file_stem().unwrap().to_owned();
     output_filename.push("_Audio");
     output_filename.push(format!(

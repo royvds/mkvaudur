@@ -2,13 +2,9 @@ use std::path::Path;
 
 use serde_json::Value;
 
-pub fn display(
-    mkv_mediainfo: &Value,
-    video_duration: f64,
-    treshold: f64,
-    language: &Option<String>,
-    process_all: bool,
-) {
+use crate::TrackFilter;
+
+pub fn display(mkv_mediainfo: &Value, video_duration: f64, track_filter: &TrackFilter) {
     println!(
         "{} | Video Duration: {}",
         Path::new(mkv_mediainfo["media"]["@ref"].as_str().unwrap())
@@ -28,10 +24,11 @@ pub fn display(
 
         let track_language = track["Language"].as_str();
 
-        if ((language.is_none()
-            || (track_language.is_some() && track_language.unwrap() == language.as_ref().unwrap()))
-            && f64::abs(duration_difference) > treshold)
-            || process_all
+        if ((track_filter.language.is_none()
+            || (track_language.is_some()
+                && track_language.unwrap() == track_filter.language.as_ref().unwrap()))
+            && f64::abs(duration_difference) > track_filter.treshold)
+            || track_filter.process_all
         {
             println!(
                 "Track {} ({}): Duration: {} Difference: {}",

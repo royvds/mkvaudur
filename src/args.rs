@@ -4,9 +4,9 @@ use clap::{Parser, Subcommand};
 
 #[derive(Parser, Debug)]
 #[clap(about = "This program requires mediainfo, ffmpeg, and ffprobe to be installed to PATH")]
-pub struct AudiotrimmerArgs {
+pub struct MkvAudurArgs {
     #[clap(short, long, default_value_t = 0.0)]
-    /// Minimum duration difference, default = 0.044
+    /// Minimum duration difference, default = 0.0
     pub treshold: f64,
 
     #[clap(short, long)]

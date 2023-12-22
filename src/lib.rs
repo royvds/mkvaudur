@@ -8,6 +8,12 @@ pub mod display;
 pub mod export;
 pub mod mediainfo;
 
+pub struct TrackFilter {
+    pub treshold: f64,
+    pub language: Option<String>,
+    pub process_all: bool,
+}
+
 pub fn get_files(filepath: &PathBuf) -> Vec<PathBuf> {
     let input_files: Vec<PathBuf>;
 
@@ -42,9 +48,7 @@ pub fn process_mkv_file(
     mkv_mediainfo: &Value,
     ref_mediainfo: &Value,
     operation_mode: &OperationMode,
-    treshold: f64,
-    language: &Option<String>,
-    process_all: bool,
+    track_filter: &TrackFilter,
     output_dir: &Option<OsString>,
 ) {
     let video_track: &Value = ref_mediainfo["media"]["track"]
@@ -60,20 +64,14 @@ pub fn process_mkv_file(
         .unwrap();
 
     match operation_mode {
-        OperationMode::Display => display::display(
-            mkv_mediainfo,
-            video_track_duration,
-            treshold,
-            language,
-            process_all,
-        ),
+        OperationMode::Display => {
+            display::display(mkv_mediainfo, video_track_duration, track_filter)
+        }
         OperationMode::Export => export::export(
             mkv_file,
             mkv_mediainfo,
             video_track_duration,
-            treshold,
-            language,
-            process_all,
+            track_filter,
             output_dir,
         ),
     }
