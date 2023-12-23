@@ -5,6 +5,8 @@ Sometimes the duration of an audio track within a MKV container differs from the
 
 To solve any potential issues caused by a disrepancy in track duration, this program trims the end of lengthy audio tracks and appends a silence to short audio tracks to match the length of the video track. When dealing with lossy encoded audio, it is expected that the end result may be off by a few milliseconds. This should pose no noticable issues.
 
+Further documentation can be found on the [wiki](https://github.com/royvds/mkvaudur/wiki)
+
 ## Dependencies
 - [FFMPEG, FFPROBE](https://ffmpeg.org/)
 - [MediaInfo](https://mediaarea.net/en/MediaInfo)
