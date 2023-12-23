@@ -10,6 +10,10 @@ use mkvaudur::{get_files, process_mkv_file, TrackFilter};
 fn main() {
     let args = MkvAudurArgs::parse();
 
+    env_logger::Builder::new()
+        .filter_level(args.verbose.log_level_filter())
+        .init();
+
     let mkv_files = iter_get_files(&args.filepath, "input");
     let reference_files = args
         .reference

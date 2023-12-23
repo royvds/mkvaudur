@@ -9,17 +9,18 @@ use std::str;
 // calculate it (stream size is missing)
 
 pub fn get_mediainfo(input_file: &PathBuf) -> Value {
-    match Command::new("mediainfo")
-        .arg("--Output=JSON")
-        .arg(input_file)
-        .output()
-    {
+    let mut cmd = Command::new("mediainfo");
+    cmd.arg("--Output=JSON").arg(input_file);
+    log::info!("Executing: {:?}", format!("{:?}", cmd).replace('\"', ""));
+
+    match cmd.output() {
         Ok(output) => {
             let data = str::from_utf8(&output.stdout).unwrap();
             serde_json::from_str(data).unwrap()
         }
-        Err(_) => {
-            panic!("Could not retrieve mediainfo of file, is mediainfo installed to path?");
+        Err(e) => {
+            log::debug!("{}", e);
+            panic!("Could not retrieve file data, is MediaInfo installed to path?");
         }
     }
 }
