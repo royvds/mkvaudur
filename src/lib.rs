@@ -1,4 +1,9 @@
-use std::{ffi::OsString, fs::read_dir, path::PathBuf};
+use std::{
+    ffi::OsString,
+    fmt,
+    fs::read_dir,
+    path::{Path, PathBuf},
+};
 
 use args::OperationMode;
 use serde_json::Value;
@@ -14,11 +19,20 @@ pub struct TrackFilter {
     pub process_all: bool,
 }
 
-pub fn get_files(filepath: &PathBuf) -> Vec<PathBuf> {
+#[derive(Debug, Clone)]
+pub struct NoMkvFound;
+
+impl fmt::Display for NoMkvFound {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "filepath does not contain any mkv file")
+    }
+}
+
+pub fn get_files(filepath: &Path) -> Result<Vec<PathBuf>, NoMkvFound> {
     let input_files: Vec<PathBuf>;
 
     if filepath.is_file() && filepath.extension().unwrap() == "mkv" {
-        input_files = vec![filepath.clone()]
+        input_files = vec![filepath.to_owned()]
     } else if filepath.is_dir() {
         let paths = read_dir(filepath).unwrap();
         input_files = paths
@@ -33,14 +47,14 @@ pub fn get_files(filepath: &PathBuf) -> Vec<PathBuf> {
             .map(|path| path.unwrap().path())
             .collect();
     } else {
-        panic!("Provided input is not a valid mkv file or directory");
+        return Err(NoMkvFound);
     }
 
     if input_files.is_empty() {
-        panic!("Provided directory does not contain any mkv files");
+        return Err(NoMkvFound);
     }
 
-    input_files
+    Ok(input_files)
 }
 
 pub fn process_mkv_file(

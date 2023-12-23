@@ -5,6 +5,9 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.4.8", features = ["derive"] }
+clap-verbosity-flag = "2.1.1"
+env_logger = "0.10.1"
+log = "0.4.20"
 serde_json = { version = "1.0.108", default-features = false, features = [
     "alloc",
 ] }
