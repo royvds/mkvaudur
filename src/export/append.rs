@@ -9,7 +9,8 @@ use super::output::{
 };
 use crate::mediainfo::get_audio_ext;
 
-fn get_track_samplerate(input_file: &PathBuf, track: &Value) -> i64 {
+/// Returns: (sample rate, channel layout)
+fn get_track_samplerate_channellayout(input_file: &PathBuf, track: &Value) -> (i64, String) {
     let mut cmd = Command::new("ffprobe");
     cmd.args(vec!["-v", "error", "-select_streams"])
         .arg(
@@ -24,7 +25,7 @@ fn get_track_samplerate(input_file: &PathBuf, track: &Value) -> i64 {
         )
         .args(vec![
             "-show_entries",
-            "stream=sample_rate",
+            "stream=sample_rate,channel_layout",
             "-of",
             "csv=p=0",
         ])
@@ -35,7 +36,7 @@ fn get_track_samplerate(input_file: &PathBuf, track: &Value) -> i64 {
         Ok(output) => {
             if !output.status.success() {
                 log::warn!(
-                    "Failed to detect samplerate of track {} of file {}\nDefaulting to 48KHz; \u{001b}[31mif this is incorrect, appending silence will fail or the resulting audio file will be malformed!\u{001b}[00m",
+                    "Failed to detect sample rate and channel layout of track {} of file {}\nDefaulting to 48Khz stereo; \u{001b}[31mif this is incorrect, appending silence will fail or the resulting audio file will be malformed!\u{001b}[00m",
                     get_map_args(track)[1],
                     input_file.display()
                 );
@@ -43,64 +44,15 @@ fn get_track_samplerate(input_file: &PathBuf, track: &Value) -> i64 {
                     "FFPROBE error log: {}",
                     String::from_utf8(output.stderr).unwrap()
                 );
-                48000
+                (48000, "stereo".to_owned())
             } else {
-                String::from_utf8(output.stdout)
-                    .unwrap()
-                    .trim()
-                    .parse()
-                    .unwrap()
-            }
-        }
-        Err(e) => {
-            log::debug!("{}", e);
-            panic!("Error retrieving track samplerate, is FFPROBE installed to path?");
-        }
-    }
-}
-
-fn get_track_channel_layout(input_file: &PathBuf, track: &Value) -> String {
-    let mut cmd = Command::new("ffprobe");
-    cmd.args(vec!["-v", "error", "-select_streams"])
-        .arg(
-            "a:".to_owned()
-                + &(track["@typeorder"]
-                    .as_str()
-                    .unwrap()
-                    .parse::<i64>()
-                    .unwrap()
-                    - 1)
-                .to_string(),
-        )
-        .args(vec![
-            "-show_entries",
-            "stream=channel_layout",
-            "-of",
-            "csv=p=0",
-        ])
-        .arg(input_file);
-
-    log::info!("Executing: {:?}", format!("{:?}", cmd).replace('\"', ""));
-    match cmd.output() {
-        Ok(output) => {
-            if !output.status.success() {
-                log::warn!(
-                    "Failed to detect channel layout of track {} of file {}\nDefaulting to stereo; \u{001b}[31mif this is incorrect, appending silence will fail or the resulting audio file will be malformed!\u{001b}[00m",
-                    get_map_args(track)[1],
-                    input_file.display()
-                );
-                log::trace!(
-                    "FFPROBE error log: {}",
-                    String::from_utf8(output.stderr).unwrap()
-                );
-                "stereo".to_owned()
-            } else {
-                String::from_utf8(output.stdout)
-                    .unwrap()
-                    .split('(')
-                    .take(1)
-                    .collect::<Vec<_>>()[0]
-                    .to_owned()
+                let output_string: String =
+                    String::from_utf8(output.stdout).unwrap().trim().to_owned();
+                let output_values: Vec<&str> = output_string.split(',').collect();
+                (
+                    output_values[0].parse().unwrap(),
+                    output_values[1].to_owned(),
+                )
             }
         }
         Err(e) => {
@@ -124,12 +76,13 @@ fn generate_silence(
     silence_file.push(".silence");
     silence_file.push(get_audio_ext(track));
 
+    let (sample_rate, channel_layout) = get_track_samplerate_channellayout(input_file, track);
+
     let mut cmd = Command::new("ffmpeg");
     cmd.args(vec!["-f", "lavfi", "-i"])
         .arg(format!(
-            "anullsrc=channel_layout={}:sample_rate={}",
-            get_track_channel_layout(input_file, track),
-            get_track_samplerate(input_file, track)
+            "anullsrc=sample_rate={}:channel_layout={}",
+            sample_rate, channel_layout
         ))
         .arg("-t")
         .arg(silence_duration.to_string())
