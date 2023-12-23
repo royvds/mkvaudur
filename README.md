@@ -24,7 +24,9 @@ Arguments:
   <FILEPATH>  Filepath, either a MKV file or directory with MKV files in it
 
 Options:
-  -t, --treshold <TRESHOLD>    Minimum duration difference, default = 0.044 [default: 0]
+  -v, --verbose...             Increase logging verbosity
+  -q, --quiet...               Decrease logging verbosity
+  -t, --treshold <TRESHOLD>    Minimum duration difference [default: 0]
   -l, --language <LANGUAGE>    Only select tracks with this language code
   -o, --output <OUTPUT>        Set a custom output directory
   -a, --all                    Display/Export all audio tracks regardless of treshold (tracks not meeting treshold will not be cut)

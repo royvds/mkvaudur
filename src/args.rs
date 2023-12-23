@@ -10,7 +10,7 @@ pub struct MkvAudurArgs {
     pub verbose: Verbosity<WarnLevel>,
 
     #[clap(short, long, default_value_t = 0.0)]
-    /// Minimum duration difference, default = 0.0
+    /// Minimum duration difference
     pub treshold: f64,
 
     #[clap(short, long)]
